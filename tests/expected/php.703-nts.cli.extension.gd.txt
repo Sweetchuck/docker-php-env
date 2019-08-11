@@ -1,0 +1,14 @@
+---
+GD Version: bundled (2.1.0 compatible)
+FreeType Support: false
+GIF Read Support: true
+GIF Create Support: true
+JPEG Support: true
+PNG Support: true
+WBMP Support: true
+XPM Support: true
+XBM Support: true
+WebP Support: false
+BMP Support: true
+JIS-mapped Japanese Font Support: false
+...
