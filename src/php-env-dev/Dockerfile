@@ -1,5 +1,5 @@
 ARG vendor=sweetchuck
-ARG imageTagParent=703-12.x.x
+ARG imageTagParent=704-13.x.x
 FROM ${vendor}/php-env-base:${imageTagParent}
 
 RUN DEBIAN_FRONTEND='noninteractive' \
@@ -14,17 +14,17 @@ RUN DEBIAN_FRONTEND='noninteractive' \
 
 
 # @todo https://github.com/moby/moby/issues/34482
-COPY --from=sweetchuck/nvm:0.34.0 /root/.nvm/       /root/.nvm/
-COPY --from=sweetchuck/nvm:0.34.0 /root/.bashrc_nvm /root/.bashrc_nvm
+COPY --from=sweetchuck/nvm:0.35.2 /root/.nvm/       /root/.nvm/
+COPY --from=sweetchuck/nvm:0.35.2 /root/.bashrc_nvm /root/.bashrc_nvm
 RUN echo 'test -s "${HOME}/.bashrc_nvm" && . "${HOME}/.bashrc_nvm" || true' >> ~/.bashrc
 
 
 # @todo https://github.com/moby/moby/issues/34482
-COPY --from=sweetchuck/node:12.8.0 /root/.nvm/versions/node/v12.8.0/ /root/.nvm/versions/node/v12.8.0/
-RUN . ${HOME}/.bashrc_nvm && nvm use --default 12.8.0
+COPY --from=sweetchuck/node:13.6.0 /root/.nvm/versions/node/v13.6.0/ /root/.nvm/versions/node/v13.6.0/
+RUN . ${HOME}/.bashrc_nvm && nvm use --default 13.6.0
 
 
-ARG composerVersion=1.9.0
+ARG composerVersion=1.9.1
 RUN expectedSignature=$(curl --disable https://composer.github.io/installer.sig) \
 	&& \
 	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -44,7 +44,7 @@ RUN expectedSignature=$(curl --disable https://composer.github.io/installer.sig)
 RUN mkdir -p /etc/supervisor/conf.d
 COPY assets/etc/supervisor/conf.d/10.program.chromium.ini /etc/supervisor/conf.d/10.program.chromium.ini
 
-LABEL com.sweetchuck.nvm.version="0.34.0"
-LABEL com.sweetchuck.node.version="12.8.0"
+LABEL com.sweetchuck.nvm.version="0.35.2"
+LABEL com.sweetchuck.node.version="13.6.0"
 LABEL com.sweetchuck.composer.version="${composerVersion}"
 LABEL com.sweetchuck.chromium.version="$(chromium-browser --version | sed --expression 's/Chromium //g')"

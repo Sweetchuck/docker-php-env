@@ -10,7 +10,6 @@ insert_final_newline = true
 
 [*.md]
 indent_style = space
-trim_trailing_whitespace = false
 
 [*.{yml,yaml}]
 indent_style = space

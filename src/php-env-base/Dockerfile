@@ -1,5 +1,5 @@
 ARG vendor=sweetchuck
-ARG phpVersion=7.3.8
+ARG phpVersion=7.4.1
 FROM ${vendor}/php:${phpVersion}
 
 RUN DEBIAN_FRONTEND='noninteractive' \
@@ -35,7 +35,7 @@ RUN DEBIAN_FRONTEND='noninteractive' \
 
 COPY assets/etc/ /etc/
 
-ARG phpName=70308
+ARG phpName=70401
 RUN sed \
 		--in-place \
 		--regexp-extended \

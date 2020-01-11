@@ -1,10 +1,10 @@
 ARG vendor=sweetchuck
-ARG phpbrewVersion=1.23.1
+ARG phpbrewVersion=1.24.1
 FROM ${vendor}/phpbrew:${phpbrewVersion}
 
-ARG phpName=70308
-ARG phpVersion=7.3.8
-ARG phpVersionMajorMinor=703
+ARG phpName=70401
+ARG phpVersion=7.4.1
+ARG phpVersionMajorMinor=704
 
 RUN phpbrew install \
 		--mirror='https://www.php.net' \

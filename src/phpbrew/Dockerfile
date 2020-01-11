@@ -41,6 +41,8 @@ RUN DEBIAN_FRONTEND='noninteractive' \
 		libsodium-dev \
 		libwebp6 \
 		libwebp-dev \
+		libsqlite3-dev \
+		libonig-dev \
 	&& \
 	rm -rf /var/lib/apt/lists/* \
 	&& \
@@ -51,7 +53,7 @@ RUN DEBIAN_FRONTEND='noninteractive' \
 		--expression='s/default_socket_timeout([ \t]*)=([ \t]*)60/default_socket_timeout\1=\2180/g' \
 		/etc/php/7.2/cli/php.ini
 
-ARG phpbrewVersion=1.23.1
+ARG phpbrewVersion=1.24.1
 ARG phpbrewDestination=/usr/local/bin/phpbrew
 RUN curl \
 		--location \

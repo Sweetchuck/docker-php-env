@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND='noninteractive' \
 	&& \
 	rm -rf /var/lib/apt/lists/*
 
-ARG nvmVersion=0.33.11
+ARG nvmVersion=0.35.2
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${nvmVersion}/install.sh | bash
 
 RUN sed \

@@ -5,27 +5,30 @@ SHELL=/bin/bash
 
 ubuntuVersion?=19.04
 
-phpbrewVersion?=1.23.1
+phpbrewVersion?=1.24.1
 phpbrewCli?=2.5.4
 
-phpName703?=70308
-phpName702?=70221
-phpName701?=70131
+phpName704?=70401
+phpName703?=70313
+phpName702?=70226
 
-phpName?=${phpName703}
+phpName?=${phpName704}
 
-composerVersion?=1.9.0
+composerVersion?=1.9.1
 
-nvmVersion?=0.34.0
+nvmVersion?=0.35.2
 
-nodeVersion12?=12.8.0
-yarnVersion12?=1.17.3
+nodeVersion13?=13.6.0
+yarnVersion13?=1.21.1
 
-nodeVersion11?=11.5.0
-yarnVersion11?=1.15.2
+nodeVersion12?=12.14.0
+yarnVersion12?=1.21.1
 
-nodeVersion?=${nodeVersion12}
-yarnVersion?=${yarnVersion12}
+nodeVersion11?=11.15.0
+yarnVersion11?=1.21.1
+
+nodeVersion?=${nodeVersion13}
+yarnVersion?=${yarnVersion13}
 
 
 phpNameToVersion=sed \
@@ -39,7 +42,7 @@ phpVersionMajorMinor=$(shell sed -e 's/..$$//g' <<<'${phpName}')
 
 nodeVersionMajor=$(shell sed -e 's/\..*//g' <<<'${nodeVersion}')
 
-imageTag?="${phpVersionMajorMinor}-${nodeVersionMajor}"
+imageTag?=${phpVersionMajorMinor}-${nodeVersionMajor}
 
 aptCacherContainerName?=apt_cacher
 aptCacherFormatHost?={{.NetworkSettings.IPAddress}}
@@ -53,18 +56,19 @@ ifneq ("${aptCacherHost}","")
 endif
 
 # Docker image IDs, except the ${vendor}/apt-cacher:latest.
-imageIds=${vendor}/php-env-dev:3.x \
+imageIds=${vendor}/php-env-dev:4.x \
+	${vendor}/php-env-base:4.x \
+	${vendor}/php-env-dev:3.x \
 	${vendor}/php-env-base:3.x \
 	${vendor}/php-env-dev:2.x \
 	${vendor}/php-env-base:2.x \
-	${vendor}/php-env-dev:1.x \
-	${vendor}/php-env-base:1.x \
+	${vendor}/php:$(shell ${phpNameToVersion} <<<'${phpName704}') \
 	${vendor}/php:$(shell ${phpNameToVersion} <<<'${phpName703}') \
 	${vendor}/php:$(shell ${phpNameToVersion} <<<'${phpName702}') \
-	${vendor}/php:$(shell ${phpNameToVersion} <<<'${phpName701}') \
 	${vendor}/phpbrew:${phpbrewVersion} \
+	${vendor}/node:${nodeVersion13} \
+	${vendor}/node:${nodeVersion12} \
 	${vendor}/node:${nodeVersion11} \
-	${vendor}/node:${nodeVersion10} \
 	${vendor}/nvm:${nvmVersion} \
 
 helpTargetMaxCharNum= 20
@@ -265,17 +269,35 @@ clean:
 
 ## @build Builds everything.
 build.php-env:
-	$(MAKE) build.php-app.703
-	$(MAKE) build.php-app.702
-	$(MAKE) build.php-app.701
+	$(MAKE) build.php-env.704
+	$(MAKE) build.php-env.703
+	$(MAKE) build.php-env.702
 
 
+## @build PHP 704
+build.php-env.704:
+	$(MAKE) phpbrew.build
+	$(MAKE) php.build phpName=${phpName704}
+
+	$(MAKE) nvm.build
+	$(MAKE) node.build nodeVersion=${nodeVersion13} yarnVersion=${yarnVersion13}
+
+	$(MAKE) php-env-base.build \
+		imageTag=${phpVersionMajorMinor}.x.x \
+		phpName=${phpName704}
+
+	$(MAKE) php-env-dev.build \
+		imageTagParent=${phpVersionMajorMinor}.x.x \
+		imageTag=${phpVersionMajorMinor}-${nodeVersionMajor}.x.x
+
+
+## @build PHP 703
 build.php-env.703:
 	$(MAKE) phpbrew.build
 	$(MAKE) php.build phpName=${phpName703}
 
 	$(MAKE) nvm.build
-	$(MAKE) node.build nodeVersion=${nodeVersion12} yarnVersion=${yarnVersion12}
+	$(MAKE) node.build nodeVersion=${nodeVersion13} yarnVersion=${yarnVersion13}
 
 	$(MAKE) php-env-base.build \
 		imageTag=${phpVersionMajorMinor}.x.x \
@@ -286,32 +308,17 @@ build.php-env.703:
 		imageTag=${phpVersionMajorMinor}-${nodeVersionMajor}.x.x
 
 
+## @build PHP 702
 build.php-env.702:
 	$(MAKE) phpbrew.build
 	$(MAKE) php.build phpName=${phpName702}
 
 	$(MAKE) nvm.build
-	$(MAKE) node.build nodeVersion=${nodeVersion12} yarnVersion=${yarnVersion12}
+	$(MAKE) node.build nodeVersion=${nodeVersion13} yarnVersion=${yarnVersion13}
 
 	$(MAKE) php-env-base.build \
 		imageTag=${phpVersionMajorMinor}.x.x \
 		phpName=${phpName702}
-
-	$(MAKE) php-env-dev.build \
-		imageTagParent=${phpVersionMajorMinor}.x.x \
-		imageTag=${phpVersionMajorMinor}-${nodeVersionMajor}.x.x
-
-
-build.php-env.701:
-	$(MAKE) phpbrew.build
-	$(MAKE) php.build phpName=${phpName701}
-
-	$(MAKE) nvm.build
-	$(MAKE) node.build nodeVersion=${nodeVersion12} yarnVersion=${yarnVersion12}
-
-	$(MAKE) php-env-base.build \
-		imageTag=${phpVersionMajorMinor}.x.x \
-		phpName=${phpName701}
 
 	$(MAKE) php-env-dev.build \
 		imageTagParent=${phpVersionMajorMinor}.x.x \

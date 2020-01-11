@@ -1,9 +1,9 @@
 ARG vendor=sweetchuck
-ARG nvmVersion=0.33.11
+ARG nvmVersion=0.35.2
 FROM ${vendor}/nvm:${nvmVersion}
 
-ARG nodeVersion=11.15.0
-ARG yarnVersion=1.16.0
+ARG nodeVersion=13.6.0
+ARG yarnVersion=1.21.1
 RUN export NVM_DIR="${HOME}/.nvm" \
 	&& \
 	. $HOME/.nvm/nvm.sh \

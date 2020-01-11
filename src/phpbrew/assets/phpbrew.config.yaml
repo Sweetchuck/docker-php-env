@@ -50,9 +50,6 @@ variants:
         opcache:
             - '--enable-opcache'
 
-    common701: &vCommon701
-        <<: *vCommon7
-
     common702: &vCommon702
         <<: *vCommon7
         sodium:
@@ -68,6 +65,28 @@ variants:
     common702-zts:
         zts:
             - '--enable-maintainer-zts --with-tsrm-pthreads'
+
+    common704: &vCommon704
+        gd:
+            - '--enable-gd'
+            - '--with-libdir=lib/x86_64-linux-gnu'
+            - '--with-jpeg'
+            - '--with-freetype'
+            - '--with-webp'
+            - '--with-xpm'
+        <<: *vCommon7
+        xml:
+            - '--enable-xml'
+            - '--enable-xmlwriter'
+        dom:
+            - '--with-libxml'
+            - '--enable-dom'
+        simplexml:
+            - '--enable-simplexml'
+        sodium:
+            - '--with-sodium'
+        zip:
+            - '--with-zip'
 
 extensions:
 
@@ -85,7 +104,7 @@ extensions:
 
     ext-memcached-7: &ext-memcached-7
         memcached: >-
-            3.1.3
+            3.1.5
             --
             --enable-memcached-sasl
             --enable-memcached-session
@@ -95,7 +114,7 @@ extensions:
 
     ext-mongodb-7: &ext-mongodb-7
         mongodb: >-
-            1.5.3
+            1.6.1
 
     ext-msgpack-7: &ext-msgpack-7
         msgpack: >-
@@ -111,7 +130,7 @@ extensions:
 
     ext-psr-7: &ext-psr-7
         psr: >-
-            0.6.0
+            0.7.0
 
     ext-pthreads-7: &ext-pthreads-7
         pthreads: >-
@@ -123,7 +142,7 @@ extensions:
 
     ext-redis-7: &ext-redis-7
         redis: >-
-            4.3.0
+            5.1.1
             --
             --enable-redis-igbinary
             --enable-redis-session
@@ -131,11 +150,7 @@ extensions:
 
     ext-xdebug-7: &ext-xdebug-7
         xdebug: >-
-            2.6.1
-
-    ext-xdebug-703: &ext-xdebug-703
-        xdebug: >-
-            2.7.2
+            2.9.0
 
     ext-yaml-7: &ext-yaml-7
         yaml: >-
@@ -155,14 +170,14 @@ extensions:
         <<: *ext-redis-7
         <<: *ext-memcached-7
 
-    common701:
-        <<: *eCommon7
-
     common702:
-        <<: *ext-readline-7
         <<: *eCommon7
+        <<: *ext-readline-7
 
     common703:
-        <<: *ext-readline-7
-        <<: *ext-xdebug-703
         <<: *eCommon7
+        <<: *ext-readline-7
+
+    common704:
+        <<: *eCommon7
+        <<: *ext-readline-7
