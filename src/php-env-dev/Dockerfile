@@ -13,15 +13,17 @@ RUN DEBIAN_FRONTEND='noninteractive' \
 	rm -rf /var/lib/apt/lists/*
 
 
-# @todo https://github.com/moby/moby/issues/34482
-COPY --from=sweetchuck/nvm:0.35.2 /root/.nvm/       /root/.nvm/
-COPY --from=sweetchuck/nvm:0.35.2 /root/.bashrc_nvm /root/.bashrc_nvm
+
+ARG nvmVersion=0.35.2
+COPY --from=sweetchuck/nvm:${nvmVersion} /root/.nvm/       /root/.nvm/
+COPY --from=sweetchuck/nvm:${nvmVersion} /root/.bashrc_nvm /root/.bashrc_nvm
 RUN echo 'test -s "${HOME}/.bashrc_nvm" && . "${HOME}/.bashrc_nvm" || true' >> ~/.bashrc
 
 
 # @todo https://github.com/moby/moby/issues/34482
-COPY --from=sweetchuck/node:13.6.0 /root/.nvm/versions/node/v13.6.0/ /root/.nvm/versions/node/v13.6.0/
-RUN . ${HOME}/.bashrc_nvm && nvm use --default 13.6.0
+ARG nodeVersion=13.6.0
+COPY --from=sweetchuck/node:${nodeVersion} /root/.nvm/versions/node/v${nodeVersion}/ /root/.nvm/versions/node/v${nodeVersion}/
+RUN . ${HOME}/.bashrc_nvm && nvm use --default ${nodeVersion}
 
 
 ARG composerVersion=1.9.1
@@ -44,7 +46,7 @@ RUN expectedSignature=$(curl --disable https://composer.github.io/installer.sig)
 RUN mkdir -p /etc/supervisor/conf.d
 COPY assets/etc/supervisor/conf.d/10.program.chromium.ini /etc/supervisor/conf.d/10.program.chromium.ini
 
-LABEL com.sweetchuck.nvm.version="0.35.2"
-LABEL com.sweetchuck.node.version="13.6.0"
+LABEL com.sweetchuck.nvm.version="${nvmVersion}"
+LABEL com.sweetchuck.node.version="${nodeVersion}"
 LABEL com.sweetchuck.composer.version="${composerVersion}"
 LABEL com.sweetchuck.chromium.version="$(chromium-browser --version | sed --expression 's/Chromium //g')"

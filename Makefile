@@ -1,23 +1,18 @@
-
-vendor=sweetchuck
+##
+## Hard-coded variables.
+##
+## You do not need to provide these variables from CLI.
+## Usually these are default values for the optional variables.
+##
 
 SHELL=/bin/bash
 
-ubuntuVersion?=19.04
-
-phpbrewVersion?=1.24.1
-phpbrewCli?=2.5.4
-
+# Manually updated latest stable PHP versions.
 phpName704?=70401
 phpName703?=70313
 phpName702?=70226
 
-phpName?=${phpName704}
-
-composerVersion?=1.9.1
-
-nvmVersion?=0.35.2
-
+# Manually updated latest stable NVM and NodeJS versions.
 nodeVersion13?=13.6.0
 yarnVersion13?=1.21.1
 
@@ -27,9 +22,30 @@ yarnVersion12?=1.21.1
 nodeVersion11?=11.15.0
 yarnVersion11?=1.21.1
 
+
+##
+## Input variables.
+##
+
+vendor?=sweetchuck
+aptCacherContainerName?=apt_cacher
+ubuntuVersion?=19.04
+
+phpbrewVersion?=1.24.1
+phpbrewCli?=2.5.4
+
+phpName?=${phpName704}
+
+composerVersion?=1.9.1
+
+nvmVersion?=0.35.2
 nodeVersion?=${nodeVersion13}
 yarnVersion?=${yarnVersion13}
 
+
+##
+## Calculated variables.
+##
 
 phpNameToVersion=sed \
 	--regexp-extended \
@@ -43,8 +59,8 @@ phpVersionMajorMinor=$(shell sed -e 's/..$$//g' <<<'${phpName}')
 nodeVersionMajor=$(shell sed -e 's/\..*//g' <<<'${nodeVersion}')
 
 imageTag?=${phpVersionMajorMinor}-${nodeVersionMajor}
+imageTagParent?=${phpVersionMajorMinor}.x.x
 
-aptCacherContainerName?=apt_cacher
 aptCacherFormatHost?={{.NetworkSettings.IPAddress}}
 aptCacherFormatPort?={{(index (index .NetworkSettings.Ports "3142/tcp") 0).HostPort}}
 
@@ -232,14 +248,30 @@ php-env-base.test:
 		'${phpName}'
 
 
+php-env-dev.dockerfile:
+	# @todo https://github.com/moby/moby/issues/34482
+	$(shell \
+		sed \
+			src/php-env-dev/Dockerfile \
+			--expression 's/\$${nvmVersion}/${nvmVersion}/g' \
+			--expression 's/\$${nodeVersion}/${nodeVersion}/g' \
+			> src/php-env-dev/Dockerfile.nvm${nvmVersion}-node${nodeVersion} \
+	)
+
 ## @build Builds ${vendor}/php-env-dev.
 php-env-dev.build:
+	$(MAKE) php-env-dev.dockerfile \
+		nvmVersion=${nvmVersion} \
+		nodeVersion=${nodeVersion}
+
 	docker \
 		build \
-		--file		'./src/php-env-dev/Dockerfile' \
+		--file		'./src/php-env-dev/Dockerfile.nvm${nvmVersion}-node${nodeVersion}' \
 		--tag		'${vendor}/php-env-dev:${imageTag}' \
 		--build-arg	'vendor=${vendor}' \
 		--build-arg	'imageTagParent=${imageTagParent}' \
+		--build-arg	'nvmVersion=${nvmVersion}' \
+		--build-arg	'nodeVersion=${nodeVersion}' \
 		--build-arg	'composerVersion=${composerVersion}' \
 		./src/php-env-dev/
 
@@ -248,6 +280,9 @@ php-env-dev.build:
 		phpVersion=${phpVersion} \
 		phpName=${phpName}
 
+	$(MAKE) php-env-dev.readme \
+		imageId=${vendor}/php-env-dev:${imageTag}
+
 
 php-env-dev.test:
 	bash ./tests/test.php-env-dev.${phpVersionMajorMinor}-${nodeVersionMajor}.bash \
@@ -255,6 +290,10 @@ php-env-dev.test:
 		'${phpVersion}' \
 		'${phpName}' \
 		'${nodeVersion}'
+
+php-env-dev.readme:
+	$(shell mkdir -p "build/$$(dirname ${imageId})")
+	$(shell imageId="${imageId}" ${SHELL} ./src/php-env-dev/README.md.bash > 'build/${imageId}.md')
 
 
 ## @other Deletes all the Docker containers and Docker images, except the apt-cacher related ones.
@@ -267,59 +306,41 @@ clean:
 	)
 
 
-## @build Builds everything.
+## @build Everything
 build.php-env:
-	$(MAKE) build.php-env.704
-	$(MAKE) build.php-env.703
-	$(MAKE) build.php-env.702
+	$(MAKE) phpbrew.build \
+		ubuntuVersion=${ubuntuVersion} \
+		vendor=${vendor} \
+		aptCacher=${aptCacher} \
+		phpbrewVersion=${phpbrewVersion}
 
+	$(MAKE) php.build \
+		vendor=${vendor} \
+		aptCacher=${aptCacher} \
+		phpbrewVersion=${phpbrewVersion} \
+		phpName=${phpName}
 
-## @build PHP 704
-build.php-env.704:
-	$(MAKE) phpbrew.build
-	$(MAKE) php.build phpName=${phpName704}
+	$(MAKE) nvm.build \
+		ubuntuVersion=${ubuntuVersion} \
+		vendor=${vendor} \
+		aptCacher=${aptCacher} \
+		nvmVersion=${nvmVersion}
 
-	$(MAKE) nvm.build
-	$(MAKE) node.build nodeVersion=${nodeVersion13} yarnVersion=${yarnVersion13}
-
-	$(MAKE) php-env-base.build \
-		imageTag=${phpVersionMajorMinor}.x.x \
-		phpName=${phpName704}
-
-	$(MAKE) php-env-dev.build \
-		imageTagParent=${phpVersionMajorMinor}.x.x \
-		imageTag=${phpVersionMajorMinor}-${nodeVersionMajor}.x.x
-
-
-## @build PHP 703
-build.php-env.703:
-	$(MAKE) phpbrew.build
-	$(MAKE) php.build phpName=${phpName703}
-
-	$(MAKE) nvm.build
-	$(MAKE) node.build nodeVersion=${nodeVersion13} yarnVersion=${yarnVersion13}
+	$(MAKE) node.build \
+		vendor=${vendor} \
+		nvmVersion=${nvmVersion} \
+		nodeVersion=${nodeVersion} \
+		yarnVersion=${yarnVersion}
 
 	$(MAKE) php-env-base.build \
-		imageTag=${phpVersionMajorMinor}.x.x \
-		phpName=${phpName703}
+		vendor=${vendor} \
+		phpName=${phpName} \
+		imageTag=${phpVersionMajorMinor}.x.x
 
 	$(MAKE) php-env-dev.build \
+		vendor=${vendor} \
 		imageTagParent=${phpVersionMajorMinor}.x.x \
-		imageTag=${phpVersionMajorMinor}-${nodeVersionMajor}.x.x
-
-
-## @build PHP 702
-build.php-env.702:
-	$(MAKE) phpbrew.build
-	$(MAKE) php.build phpName=${phpName702}
-
-	$(MAKE) nvm.build
-	$(MAKE) node.build nodeVersion=${nodeVersion13} yarnVersion=${yarnVersion13}
-
-	$(MAKE) php-env-base.build \
-		imageTag=${phpVersionMajorMinor}.x.x \
-		phpName=${phpName702}
-
-	$(MAKE) php-env-dev.build \
-		imageTagParent=${phpVersionMajorMinor}.x.x \
+		nvmVersion=${nvmVersion} \
+		nodeVersion=${nodeVersion} \
+		composerVersion=${composerVersion} \
 		imageTag=${phpVersionMajorMinor}-${nodeVersionMajor}.x.x
